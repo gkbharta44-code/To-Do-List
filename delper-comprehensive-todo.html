@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Delper Ecom — Comprehensive Master To-Do List</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#07090f;
+  --bg2:#0d1117;
+  --surface:#111827;
+  --border:#1c2a3a;
+  --border2:#243447;
+  --accent:#00e5c3;
+  --accent-dim:#00b89e;
+  --violet:#7c6dff;
+  --gold:#f0b429;
+  --rose:#ff5c8a;
+  --sky:#38bdf8;
+  --text:#dce6f0;
+  --muted:#4a6077;
+  --muted2:#6b82a0;
+  --done:#0a1f18;
+}
+
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh}
+
+/* ── TOP BAR ── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(7,9,15,0.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0.7rem 1.5rem;
+  display:flex;align-items:center;gap:1.5rem;
+  flex-wrap:wrap;
+}
+.topbar-brand{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.75rem;font-weight:700;
+  color:var(--accent);letter-spacing:0.12em;
+  white-space:nowrap;
+}
+.topbar-progress{flex:1;min-width:160px}
+.pb-track{height:4px;background:var(--border2);border-radius:99px;overflow:hidden}
+.pb-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--violet));border-radius:99px;transition:width .35s ease}
+.pb-label{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--muted2);margin-top:3px}
+.topbar-stats{display:flex;gap:1.2rem;flex-wrap:wrap}
+.ts{text-align:center}
+.ts-v{font-family:'IBM Plex Mono',monospace;font-size:1rem;font-weight:700;color:#fff;line-height:1}
+.ts-l{font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px}
+.ts-v.c{color:var(--accent)}
+
+/* ── FILTER BAR ── */
+.filterbar{
+  max-width:1100px;margin:0 auto;
+  padding:1rem 1.5rem;
+  display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;
+}
+.filter-label{font-size:0.7rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-right:0.25rem;white-space:nowrap}
+.fbtn{
+  font-family:'IBM Plex Mono',monospace;font-size:0.65rem;font-weight:700;
+  padding:4px 10px;border-radius:6px;border:1px solid var(--border2);
+  background:transparent;color:var(--muted2);cursor:pointer;letter-spacing:0.05em;
+  transition:all .15s;
+}
+.fbtn:hover{border-color:var(--accent);color:var(--accent)}
+.fbtn.active{background:var(--accent);border-color:var(--accent);color:#000}
+.search-wrap{margin-left:auto}
+.search-input{
+  background:var(--surface);border:1px solid var(--border2);
+  color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:0.8rem;
+  padding:5px 12px;border-radius:8px;outline:none;width:200px;
+  transition:border-color .15s;
+}
+.search-input:focus{border-color:var(--accent)}
+.search-input::placeholder{color:var(--muted)}
+
+/* ── MAIN LAYOUT ── */
+.wrap{max-width:1100px;margin:0 auto;padding:1rem 1.5rem 5rem}
+
+/* ── HERO ── */
+.hero{
+  padding:2.5rem 0 2rem;
+  border-bottom:1px solid var(--border);
+  margin-bottom:2rem;
+}
+.hero-eye{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.25em;color:var(--accent);text-transform:uppercase;margin-bottom:0.6rem}
+.hero h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;color:#fff;line-height:1.1;margin-bottom:0.5rem}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero-sub{color:var(--muted2);font-size:0.88rem;max-width:680px;line-height:1.6}
+.hero-chips{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:1rem}
+.hchip{font-size:0.7rem;font-family:'IBM Plex Mono',monospace;padding:3px 9px;border-radius:20px;border:1px solid;letter-spacing:0.05em}
+
+/* ── CATEGORY SECTION ── */
+.cat-section{margin-bottom:2.5rem}
+.cat-header{
+  display:flex;align-items:center;gap:0.75rem;
+  padding:0.6rem 0;
+  border-bottom:2px solid var(--border);
+  margin-bottom:1rem;
+  cursor:pointer;user-select:none;
+}
+.cat-header:hover .cat-title{color:var(--accent)}
+.cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cat-title{font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;transition:color .15s}
+.cat-count{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--muted);margin-left:auto;margin-right:0.5rem}
+.cat-chevron{font-size:0.7rem;color:var(--muted);transition:transform .2s}
+.cat-section.collapsed .cat-chevron{transform:rotate(-90deg)}
+.cat-section.collapsed .phase-grid{display:none}
+
+/* ── PHASE GRID ── */
+.phase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1rem}
+
+/* ── PHASE CARD ── */
+.phase-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  transition:border-color .15s;
+}
+.phase-card:hover{border-color:var(--border2)}
+.phase-card-header{
+  display:flex;align-items:center;gap:0.75rem;
+  padding:0.75rem 1rem;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+}
+.phase-card-header:hover{background:#151f2e}
+.ph-num{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.1em;white-space:nowrap}
+.ph-title{font-size:0.8rem;font-weight:600;flex:1;color:#fff;line-height:1.3}
+.ph-timeline{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--muted);white-space:nowrap}
+.ph-chevron{font-size:0.65rem;color:var(--muted);transition:transform .15s}
+.phase-card.collapsed .ph-chevron{transform:rotate(-90deg)}
+.phase-card.collapsed .task-ul{display:none}
+
+/* ── TASK LIST ── */
+.task-ul{list-style:none;padding:0.25rem 0}
+.task-li{
+  display:flex;align-items:flex-start;gap:0.7rem;
+  padding:0.55rem 1rem;
+  border-bottom:1px solid #0c1622;
+  cursor:pointer;transition:background .12s;
+}
+.task-li:last-child{border-bottom:none}
+.task-li:hover{background:#0f1b2d}
+.task-li.done{background:var(--done)}
+.task-li.done .task-txt{text-decoration:line-through;color:var(--muted)}
+.task-li.hidden{display:none}
+
+.cb{
+  width:16px;height:16px;min-width:16px;
+  border:1.5px solid var(--border2);border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  margin-top:2px;font-size:0.6rem;color:transparent;
+  transition:all .12s;flex-shrink:0;
+}
+.task-li.done .cb{background:var(--accent);border-color:var(--accent);color:#000}
+
+.task-txt{font-size:0.8rem;line-height:1.45;flex:1;color:var(--text)}
+
+.tag{
+  font-family:'IBM Plex Mono',monospace;font-size:0.55rem;
+  padding:2px 5px;border-radius:4px;white-space:nowrap;
+  font-weight:700;letter-spacing:0.04em;flex-shrink:0;margin-top:2px;
+}
+
+/* tag colours */
+.t-legal  {background:#160d30;color:#a78bfa;border:1px solid #a78bfa}
+.t-tech   {background:#0a1f1a;color:var(--accent);border:1px solid var(--accent)}
+.t-partner{background:#1c1600;color:var(--gold);border:1px solid var(--gold)}
+.t-ops    {background:#1c0910;color:var(--rose);border:1px solid var(--rose)}
+.t-ads    {background:#0e0e22;color:#818cf8;border:1px solid #818cf8}
+.t-survey {background:#0a1a10;color:#4ade80;border:1px solid #4ade80}
+.t-onboard{background:#1a1100;color:#fb923c;border:1px solid #fb923c}
+.t-token  {background:#0b1624;color:var(--sky);border:1px solid var(--sky)}
+.t-mktg   {background:#1a0d18;color:#f472b6;border:1px solid #f472b6}
+.t-finance{background:#121c0a;color:#a3e635;border:1px solid #a3e635}
+.t-hr     {background:#1a0f00;color:#fbbf24;border:1px solid #fbbf24}
+.t-security{background:#1a0808;color:#f87171;border:1px solid #f87171}
+.t-data   {background:#081820;color:#67e8f9;border:1px solid #67e8f9}
+.t-exchange{background:#0f0f1f;color:#c084fc;border:1px solid #c084fc}
+.t-gov    {background:#0f1a12;color:#86efac;border:1px solid #86efac}
+.t-qa     {background:#1a1200;color:#fde68a;border:1px solid #fde68a}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:3rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:0.8rem;display:none}
+.empty-state.show{display:block}
+
+@media(max-width:600px){
+  .phase-grid{grid-template-columns:1fr}
+  .topbar{padding:0.6rem 1rem}
+  .filterbar{padding:0.75rem 1rem}
+  .wrap{padding:0.75rem 1rem 4rem}
+  .search-input{width:140px}
+}
+</style>
+</head>
+<body>
+
+<!-- STICKY TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">⬡ DELPER · DPR</div>
+  <div class="topbar-progress">
+    <div class="pb-track"><div class="pb-fill" id="pbFill"></div></div>
+    <div class="pb-label" id="pbLabel">0 of 0 tasks</div>
+  </div>
+  <div class="topbar-stats">
+    <div class="ts"><div class="ts-v c" id="sTotal">—</div><div class="ts-l">Total</div></div>
+    <div class="ts"><div class="ts-v" id="sDone">0</div><div class="ts-l">Done</div></div>
+    <div class="ts"><div class="ts-v" id="sLeft">—</div><div class="ts-l">Left</div></div>
+    <div class="ts"><div class="ts-v" id="sPct">0%</div><div class="ts-l">Complete</div></div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="wrap">
+<div class="hero">
+  <div class="hero-eye">Delper Ecom Pvt Ltd · DPR Token · June 2026 · Confidential</div>
+  <h1>Comprehensive<br>Launch <em>Master Plan</em></h1>
+  <p class="hero-sub">Every task required to take DPR from incorporation to global commercial launch — legal, technology, token economics, opinion poll onboarding, all 6 supply chain layers, ad & survey mediation, financial infrastructure, HR, security, exchange listings, and ongoing operations.</p>
+  <div class="hero-chips">
+    <span class="hchip" style="color:var(--accent);border-color:var(--accent)">22 PHASES</span>
+    <span class="hchip" style="color:var(--gold);border-color:var(--gold)">250+ TASKS</span>
+    <span class="hchip" style="color:var(--violet);border-color:var(--violet)">16 CATEGORIES</span>
+    <span class="hchip" style="color:var(--rose);border-color:var(--rose)">M1 → M24+</span>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filterbar" style="padding-left:0;padding-right:0">
+  <span class="filter-label">FILTER:</span>
+  <button class="fbtn active" data-filter="all">ALL</button>
+  <button class="fbtn" data-filter="legal">LEGAL</button>
+  <button class="fbtn" data-filter="tech">TECH</button>
+  <button class="fbtn" data-filter="token">TOKEN</button>
+  <button class="fbtn" data-filter="onboard">ONBOARD</button>
+  <button class="fbtn" data-filter="partner">PARTNER</button>
+  <button class="fbtn" data-filter="ads">ADS</button>
+  <button class="fbtn" data-filter="survey">SURVEY</button>
+  <button class="fbtn" data-filter="finance">FINANCE</button>
+  <button class="fbtn" data-filter="hr">HR</button>
+  <button class="fbtn" data-filter="security">SECURITY</button>
+  <button class="fbtn" data-filter="mktg">MKTG</button>
+  <button class="fbtn" data-filter="exchange">EXCHANGE</button>
+  <button class="fbtn" data-filter="ops">OPS</button>
+  <div class="search-wrap">
+    <input class="search-input" id="searchInput" placeholder="Search tasks…" type="text"/>
+  </div>
+</div>
+
+<div id="mainList"></div>
+<div class="empty-state" id="emptyState">No tasks match your filter or search.</div>
+</div><!-- /wrap -->
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const categories = [
+  {
+    id:"foundation", label:"FOUNDATION & CORPORATE", color:"#a78bfa",
+    phases:[
+      {
+        num:"PH 01", title:"Incorporation & Corporate Structure", timeline:"M1–2",
+        tasks:[
+          {t:"Incorporate Delper Ecom Pvt Ltd under India Companies Act", tag:"legal"},
+          {t:"File for Section 80-IAC India Startup tax exemption (Y1–Y3)", tag:"legal"},
+          {t:"Register holding company in UAE (DIFC or ADGM free zone)", tag:"legal"},
+          {t:"Register Singapore subsidiary (Pte. Ltd.) for Asia-Pacific operations", tag:"legal"},
+          {t:"Set up UK Ltd for European operations", tag:"legal"},
+          {t:"Draft and execute shareholder agreements, cap table, and founder vesting", tag:"legal"},
+          {t:"Appoint Board of Directors — minimum 5 members including independent directors", tag:"gov"},
+          {t:"Appoint Regulatory Advisory Board — former SEC, FCA, VARA officials", tag:"legal"},
+          {t:"Establish corporate governance framework and board meeting schedule", tag:"gov"},
+          {t:"Draft and execute NDAs for all advisors, consultants, and early hires", tag:"legal"},
+        ]
+      },
+      {
+        num:"PH 02", title:"Legal, Regulatory & Licensing", timeline:"M1–20",
+        tasks:[
+          {t:"Engage securities law firm (Cooley/WilmerHale calibre) for Reg D 506(c) filing", tag:"legal"},
+          {t:"Register FinCEN MSB (Money Services Business) — USA", tag:"legal"},
+          {t:"Apply for UAE VARA regulatory sandbox licence", tag:"legal"},
+          {t:"Apply for MAS licence — Monetary Authority of Singapore", tag:"legal"},
+          {t:"Apply for FCA registration — UK Financial Conduct Authority", tag:"legal"},
+          {t:"File MiCA ART authorisation — EU 27 countries (M15–18)", tag:"legal"},
+          {t:"Apply for DFSA Dubai Financial Services Authority licence", tag:"legal"},
+          {t:"Apply for NY BitLicense — USA (M20)", tag:"legal"},
+          {t:"Draft Howey Test navigation documentation — utility vs security bifurcation", tag:"legal"},
+          {t:"Prepare GDPR + UK GDPR data subject rights framework per jurisdiction", tag:"legal"},
+          {t:"File PDPA Singapore + DPDPA India compliance documentation", tag:"legal"},
+          {t:"Prepare FATF Travel Rule compliance framework", tag:"legal"},
+          {t:"Prepare Islamic Sukuk non-dilutive capital structure (M15+, $200–500M)", tag:"legal"},
+          {t:"Draft Terms of Service and Privacy Policy per jurisdiction (7 total)", tag:"legal"},
+          {t:"Draft consumer dispute resolution and refund policy per jurisdiction", tag:"legal"},
+          {t:"Obtain annual regulatory licence renewals (ongoing)", tag:"legal"},
+        ]
+      },
+    ]
+  },
+  {
+    id:"finance", label:"FINANCIAL INFRASTRUCTURE", color:"#a3e635",
+    phases:[
+      {
+        num:"PH 03", title:"Banking, Treasury & Financial Operations", timeline:"M1–4",
+        tasks:[
+          {t:"Open corporate bank accounts — crypto-friendly banks in UAE, Singapore, India, UK", tag:"finance"},
+          {t:"Set up multi-signature treasury wallets for ETH stability pool (3-of-5 multisig)", tag:"finance"},
+          {t:"Establish fiat on/off ramp partners (e.g. BCB Group, Silvergate equivalent)", tag:"finance"},
+          {t:"Build CFO financial model: 5-year P&L, cash flow, burn rate projections", tag:"finance"},
+          {t:"Set up payroll infrastructure across India, UAE, Singapore, UK jurisdictions", tag:"finance"},
+          {t:"Establish foreign exchange hedging strategy for 38-currency exposure", tag:"finance"},
+          {t:"Set up ETH price volatility hedge for stability pool (options/futures strategy)", tag:"finance"},
+          {t:"Engage Big 4 audit firm for quarterly financial attestation", tag:"finance"},
+          {t:"Set up monthly management accounts reporting system", tag:"finance"},
+          {t:"Establish insurance coverage: cyber liability, D&O, professional indemnity, E&O", tag:"finance"},
+          {t:"Set up transfer pricing policy across multi-jurisdiction corporate structure", tag:"finance"},
+          {t:"Secure $25–50M seed reserve capital (Phase 1)", tag:"finance"},
+          {t:"Secure $66.5M total Phase 1 investment round (Foundation, M1–6)", tag:"finance"},
+          {t:"Establish $100–200M reserve expansion fund (Phase 2, M7–12)", tag:"finance"},
+          {t:"Run Reg D 506(c) institutional investor placement (M7–12)", tag:"finance"},
+          {t:"Publish monthly ETH pool attestation reports with Big 4 sign-off", tag:"finance"},
+        ]
+      },
+    ]
+  },
+  {
+    id:"hr", label:"PEOPLE, HR & OFFICES", color:"#fbbf24",
+    phases:[
+      {
+        num:"PH 04", title:"Executive Hiring & HR Infrastructure", timeline:"M1–6",
+        tasks:[
+          {t:"Hire CEO — former Visa/Mastercard executive, 15+ years global payments", tag:"hr"},
+          {t:"Hire CTO — Hyperledger architect, smart contract security specialist", tag:"hr"},
+          {t:"Hire CFO — Big 4 fintech audit background, crypto treasury management", tag:"hr"},
+          {t:"Hire CCO — former FinCEN compliance officer, FATF expertise", tag:"hr"},
+          {t:"Hire CLO — Reg D, MiCA, VARA, MAS licensing specialist", tag:"hr"},
+          {t:"Hire CBO — supply chain partnerships lead (SAP Ariba, Coupa relationships)", tag:"hr"},
+          {t:"Set up HRIS (HR Information System) for multi-jurisdiction workforce", tag:"hr"},
+          {t:"Draft employee contracts per jurisdiction (India, UAE, Singapore, UK)", tag:"hr"},
+          {t:"Design token/stock option plan (ESOP) for employees and advisors", tag:"hr"},
+          {t:"Build recruitment pipeline: target 74 FTEs by M6", tag:"hr"},
+          {t:"Establish office — Dubai (UAE HQ), M1", tag:"hr"},
+          {t:"Establish office — Singapore, M4", tag:"hr"},
+          {t:"Establish office — Bengaluru/Mumbai (India), M6", tag:"hr"},
+          {t:"Establish office — London (UK), M9", tag:"hr"},
+          {t:"Scale to 395 FTEs by M24 — phased hiring plan per department", tag:"hr"},
+          {t:"Set up employee onboarding, training, and performance review system", tag:"hr"},
+          {t:"Establish whistleblower and ethics reporting framework", tag:"gov"},
+        ]
+      },
+    ]
+  },
+  {
+    id:"tech", label:"TECHNOLOGY & BLOCKCHAIN", color:"#00e5c3",
+    phases:[
+      {
+        num:"PH 05", title:"Core Blockchain & Smart Contract Infrastructure", timeline:"M1–6",
+        tasks:[
+          {t:"Deploy IBM Hyperledger Fabric private permissioned ledger (5,000 TPS)", tag:"tech"},
+          {t:"Develop 6-layer recursive smart contracts (0.85× multiplier per layer)", tag:"tech"},
+          {t:"Commission Trail of Bits smart contract security audit", tag:"tech"},
+          {t:"Commission ConsenSys Diligence secondary smart contract audit", tag:"tech"},
+          {t:"Integrate Chainlink Oracles — real-time price feeds, 38 currencies + 31 crypto", tag:"tech"},
+          {t:"Build Dual Reward Split Engine (25% ad discount / 75% loyalty per $247 txn)", tag:"tech"},
+          {t:"Build ETH Stability Pool smart contract with auto-buyback trigger mechanism", tag:"tech"},
+          {t:"Build token minting and issuance smart contract (2.94 DPR per $247 txn)", tag:"tech"},
+          {t:"Build token burn mechanism smart contract", tag:"tech"},
+          {t:"Achieve ISO 27001 infrastructure certification", tag:"tech"},
+          {t:"Achieve SOC 2 Type II certification", tag:"tech"},
+          {t:"Achieve PCI DSS Level 1 compliance", tag:"tech"},
+          {t:"Achieve ISO 20022 financial messaging standard compliance", tag:"tech"},
+          {t:"Complete MiCA readiness technical audit", tag:"tech"},
+          {t:"Certify Hyperledger network at 5,000 TPS (M13–18)", tag:"tech"},
+        ]
+      },
+      {
+        num:"PH 06", title:"Product, Apps & Platform Development", timeline:"M2–8",
+        tasks:[
+          {t:"Build DPR token wallet (instant Hyperledger credit, multi-currency)", tag:"tech"},
+          {t:"Build Delper Ecom App — Android (Google Play Store)", tag:"tech"},
+          {t:"Build Delper Ecom App — iOS (App Store)", tag:"tech"},
+          {t:"Build Delper Live Point of Sale (POS) integration SDK", tag:"tech"},
+          {t:"Build Delper Ecom Group Dashboard (real-time ecosystem metrics)", tag:"tech"},
+          {t:"Build Opinion Poll web portal with DPR reward integration", tag:"tech"},
+          {t:"Build FAQ onboarding web page", tag:"tech"},
+          {t:"Build Delper AI Chatbot (support + onboarding, multilingual)", tag:"tech"},
+          {t:"Build Delper Marketplace for DPR token redemption", tag:"tech"},
+          {t:"Build CryptoCARD Global finder map (merchant locator)", tag:"tech"},
+          {t:"Build ETH reserve public attestation live dashboard", tag:"tech"},
+          {t:"Build partner/SC layer self-service onboarding portal", tag:"tech"},
+          {t:"Build merchant self-serve registration and management portal", tag:"tech"},
+          {t:"Build investor reporting portal (quarterly reports, pool data)", tag:"tech"},
+          {t:"Build fraud detection and transaction monitoring system", tag:"tech"},
+          {t:"Integrate AML/KYC stack: Chainalysis + Elliptic + Jumio + Sumsub", tag:"tech"},
+          {t:"Build business intelligence (BI) analytics dashboard", tag:"data"},
+          {t:"Build real-time token velocity and circulation monitoring system", tag:"data"},
+          {t:"Integrate SAP Ariba API connector for SC Layer 3 onboarding", tag:"tech"},
+          {t:"Integrate Coupa Software API connector for SC Layer 3 onboarding", tag:"tech"},
+        ]
+      },
+      {
+        num:"PH 07", title:"Quality Assurance, Testing & Security", timeline:"M4–8",
+        tasks:[
+          {t:"Write end-to-end QA testing plan covering all transaction types", tag:"qa"},
+          {t:"Conduct load testing at 5,000 TPS under sustained conditions", tag:"qa"},
+          {t:"Conduct User Acceptance Testing (UAT) with pilot merchants", tag:"qa"},
+          {t:"Establish regression testing protocol for every platform update", tag:"qa"},
+          {t:"Conduct full penetration testing of entire platform pre-launch", tag:"security"},
+          {t:"Launch public bug bounty programme (Immunefi or HackerOne)", tag:"security"},
+          {t:"Set up 24/7 security operations centre (SOC) monitoring", tag:"security"},
+          {t:"Conduct third-party vulnerability assessment of all APIs", tag:"security"},
+          {t:"Set up DDoS protection and WAF (Web Application Firewall)", tag:"security"},
+          {t:"Build disaster recovery and business continuity plan", tag:"security"},
+          {t:"Establish incident response playbook for security breaches", tag:"security"},
+          {t:"Conduct annual penetration tests (ongoing post-launch)", tag:"security"},
+        ]
+      },
+    ]
+  },
+  {
+    id:"token", label:"TOKEN ECONOMICS & EXCHANGE LISTINGS", color:"#38bdf8",
+    phases:[
+      {
+        num:"PH 08", title:"Token Economics Design & Minting", timeline:"M1–4",
+        tasks:[
+          {t:"Define DPR token total supply: 1.5 trillion tokens", tag:"token"},
+          {t:"Set seed price: $0.21 per DPR token", tag:"token"},
+          {t:"Define token allocation: ecosystem, reserve, seed, public, treasury, team", tag:"token"},
+          {t:"Define founder and team vesting schedule (cliff + linear vesting)", tag:"token"},
+          {t:"Define advisor token allocation and vesting", tag:"token"},
+          {t:"Configure issuance rate: 2.94 DPR tokens per $247 transaction", tag:"token"},
+          {t:"Programme 6-layer automatic distribution splits per transaction", tag:"token"},
+          {t:"Configure DPR buy charge: 0.5% of SC buy value per transaction", tag:"token"},
+          {t:"Configure DPR sell charge: 0.5% of SC sell value per transaction", tag:"token"},
+          {t:"Configure reward earned charge: 0.5% of loyalty pool per transaction", tag:"token"},
+          {t:"Configure reward redeemed charge: 0.5% of redemption value per transaction", tag:"token"},
+          {t:"Programme ETH pool inflow: 80% of all charges to ETH treasury", tag:"token"},
+          {t:"Programme operational revenue: 20% of all charges to revenue", tag:"token"},
+          {t:"Define token burn triggers, amounts, and schedule", tag:"token"},
+          {t:"Produce DPR token economics whitepaper (technical + public versions)", tag:"token"},
+          {t:"Conduct token economics third-party audit", tag:"token"},
+        ]
+      },
+      {
+        num:"PH 09", title:"Exchange Listings & Market Liquidity", timeline:"M8–18",
+        tasks:[
+          {t:"Apply for DPR listing on Binance (Tier 1 exchange)", tag:"exchange"},
+          {t:"Apply for DPR listing on Coinbase (Tier 1 exchange)", tag:"exchange"},
+          {t:"Apply for DPR listing on Kraken (Tier 1 exchange)", tag:"exchange"},
+          {t:"Apply for DPR listing on OKX (Tier 2 exchange)", tag:"exchange"},
+          {t:"Apply for DPR listing on KuCoin (Tier 2 exchange)", tag:"exchange"},
+          {t:"Apply for DPR listing on Bybit (Tier 2 exchange)", tag:"exchange"},
+          {t:"Apply for DPR listing on Bitget (Tier 2 exchange)", tag:"exchange"},
+          {t:"Set up DEX liquidity pools on Uniswap and PancakeSwap", tag:"exchange"},
+          {t:"Sign market maker agreements for DPR liquidity provision (2–3 firms)", tag:"exchange"},
+          {t:"Set up CEX/DEX arbitrage monitoring and management system", tag:"exchange"},
+          {t:"Configure ETH pool auto-buyback triggers linked to exchange price feeds", tag:"exchange"},
+          {t:"Maintain minimum $50M liquidity pool across exchanges at launch", tag:"exchange"},
+        ]
+      },
+    ]
+  },
+  {
+    id:"onboarding", label:"OPINION POLL & 6-LAYER ONBOARDING", color:"#fb923c",
+    phases:[
+      {
+        num:"PH 10", title:"Opinion Poll → Consumer Onboarding (Layer 1)", timeline:"M4–8",
+        tasks:[
+          {t:"Design Opinion Poll questionnaire — product, service, brand preference surveys", tag:"onboard"},
+          {t:"Set DPR micro-reward per completed poll response", tag:"onboard"},
+          {t:"Build poll → DPR wallet auto-creation flow (new user entry point)", tag:"onboard"},
+          {t:"Integrate KYC gate at poll-to-wallet conversion step (Jumio)", tag:"onboard"},
+          {t:"Build referral programme: DPR reward for inviting new poll participants", tag:"onboard"},
+          {t:"Build user dashboard: DPR earned, redeemed, balance, transaction history", tag:"onboard"},
+          {t:"Integrate poll data → B2B market research product for monetisation", tag:"onboard"},
+          {t:"Configure poll → loyalty account activation → seed investor entry path", tag:"onboard"},
+          {t:"Run pilot opinion poll campaign — target 50,000 responses (M6)", tag:"onboard"},
+          {t:"Launch Delper Marketplace for DPR redemption by L1 consumers", tag:"onboard"},
+          {t:"Set up consumer DPR wallet support and helpdesk", tag:"onboard"},
+          {t:"Launch consumer referral leaderboard and gamification layer", tag:"onboard"},
+        ]
+      },
+      {
+        num:"PH 11", title:"Distributor Onboarding — Layer 2 (×0.850)", timeline:"M5–10",
+        tasks:[
+          {t:"Shortlist top 50 distributors per target geography (UAE, Singapore, India)", tag:"onboard"},
+          {t:"Build distributor onboarding pack: DPR settlement guide + SC smart contract explainer", tag:"onboard"},
+          {t:"Train distributor finance teams: DPR receipt, redemption, liquidation mechanics", tag:"onboard"},
+          {t:"Integrate distributor ERP systems with Hyperledger smart contract layer", tag:"tech"},
+          {t:"Configure 0.850× reward multiplier for L2 in smart contracts", tag:"token"},
+          {t:"Sign first 10 distributor pilot agreements (UAE + Singapore)", tag:"partner"},
+          {t:"Set up distributor DPR wallets and Delper dashboard access", tag:"onboard"},
+          {t:"Run first live L2 distributor SC settlement transaction on Hyperledger", tag:"ops"},
+          {t:"Build distributor SLA monitoring dashboard", tag:"data"},
+        ]
+      },
+      {
+        num:"PH 12", title:"Manufacturer Onboarding — Layer 3 (×0.723)", timeline:"M6–11",
+        tasks:[
+          {t:"Map manufacturer relationships from onboarded distributor network", tag:"onboard"},
+          {t:"Build manufacturer onboarding pack: procurement settlement in DPR", tag:"onboard"},
+          {t:"Integrate SAP Ariba + Coupa API with Hyperledger for manufacturer procurement", tag:"tech"},
+          {t:"Configure 0.723× reward multiplier for L3 in smart contracts", tag:"token"},
+          {t:"Train manufacturer procurement teams on DPR buy/sell charge mechanics", tag:"onboard"},
+          {t:"Sign first 10 manufacturer pilot agreements", tag:"partner"},
+          {t:"Set up manufacturer DPR wallets and Delper dashboard access", tag:"onboard"},
+          {t:"Run first live L3→L2 manufacturer-to-distributor DPR settlement", tag:"ops"},
+          {t:"Build manufacturer SLA monitoring dashboard", tag:"data"},
+        ]
+      },
+      {
+        num:"PH 13", title:"Processor Onboarding — Layer 4 (×0.614)", timeline:"M7–12",
+        tasks:[
+          {t:"Identify processors supplying onboarded manufacturers (follow chain upward)", tag:"onboard"},
+          {t:"Build processor onboarding pack: intermediate goods settlement in DPR", tag:"onboard"},
+          {t:"Configure 0.614× reward multiplier for L4 in smart contracts", tag:"token"},
+          {t:"Integrate processor invoicing/ERP systems with Hyperledger settlement layer", tag:"tech"},
+          {t:"Train processor finance and ops teams on DPR token mechanics", tag:"onboard"},
+          {t:"Sign first 10 processor pilot agreements", tag:"partner"},
+          {t:"Set up processor DPR wallets and Delper dashboard access", tag:"onboard"},
+          {t:"Run first live L4→L3 processor-to-manufacturer DPR settlement", tag:"ops"},
+        ]
+      },
+      {
+        num:"PH 14", title:"Wholesaler Onboarding — Layer 5 (×0.522)", timeline:"M8–13",
+        tasks:[
+          {t:"Map wholesaler network from onboarded distributor relationships", tag:"onboard"},
+          {t:"Build wholesaler onboarding pack: bulk procurement settlement in DPR", tag:"onboard"},
+          {t:"Configure 0.522× reward multiplier for L5 in smart contracts", tag:"token"},
+          {t:"Integrate wholesaler order management systems with Hyperledger", tag:"tech"},
+          {t:"Train wholesaler teams: earn on buy, earn on sell, redemption options", tag:"onboard"},
+          {t:"Sign first 10 wholesaler pilot agreements", tag:"partner"},
+          {t:"Set up wholesaler DPR wallets and Delper dashboard access", tag:"onboard"},
+          {t:"Run first live L5→L4 wholesaler-to-processor DPR settlement", tag:"ops"},
+        ]
+      },
+      {
+        num:"PH 15", title:"Raw Material Supplier Onboarding — Layer 6 (×0.444)", timeline:"M9–14",
+        tasks:[
+          {t:"Identify raw material suppliers from onboarded processor/manufacturer network", tag:"onboard"},
+          {t:"Build raw material supplier onboarding pack: commodity settlement in DPR", tag:"onboard"},
+          {t:"Configure 0.444× reward multiplier for L6 in smart contracts", tag:"token"},
+          {t:"Integrate commodity trading/invoicing systems with Hyperledger settlement", tag:"tech"},
+          {t:"Train supplier finance teams on DPR settlement across 38 currencies", tag:"onboard"},
+          {t:"Sign first 10 raw material supplier pilot agreements", tag:"partner"},
+          {t:"Set up raw material supplier DPR wallets and Delper dashboard access", tag:"onboard"},
+          {t:"Run first live L6→L5 raw material-to-wholesaler DPR settlement", tag:"ops"},
+          {t:"Verify full 6-layer chain: end-to-end L6→L1 transaction on Hyperledger", tag:"ops"},
+          {t:"Audit full 4.15× ecosystem multiplier across all 6 live layers", tag:"ops"},
+        ]
+      },
+      {
+        num:"PH 16", title:"Merchant Onboarding (POS Layer)", timeline:"M6–12",
+        tasks:[
+          {t:"Build merchant self-serve onboarding portal and registration flow", tag:"onboard"},
+          {t:"Develop POS terminal SDK for Stripe, Adyen, Worldpay integration", tag:"tech"},
+          {t:"Onboard PAX Technology terminals (60M+ globally) to DPR reward layer", tag:"partner"},
+          {t:"Onboard Grab merchant network (9M SE Asia merchants)", tag:"partner"},
+          {t:"Onboard Magnati / Noon merchants (Gulf region)", tag:"partner"},
+          {t:"Onboard Flutterwave merchant network (34 African countries)", tag:"partner"},
+          {t:"Train merchant staff: DPR loyalty mechanics, redemption, dashboard access", tag:"onboard"},
+          {t:"Set up merchant DPR wallets with automatic reward distribution per transaction", tag:"onboard"},
+          {t:"Configure merchant ad discount display: 25% ad credit visible at POS", tag:"ops"},
+          {t:"Run pilot: 50,000+ transactions across UAE + Singapore merchants (M7)", tag:"ops"},
+          {t:"Build merchant SLA monitoring and performance dashboard", tag:"data"},
+        ]
+      },
+    ]
+  },
+  {
+    id:"platforms", label:"AD & SURVEY MEDIATION PLATFORMS", color:"#818cf8",
+    phases:[
+      {
+        num:"PH 17", title:"Ad Mediation Platform Partnerships", timeline:"M3–9",
+        tasks:[
+          {t:"Sign integration agreement — Google AdMob (global mobile ad mediation)", tag:"ads"},
+          {t:"Sign integration agreement — Meta Audience Network (Facebook/Instagram)", tag:"ads"},
+          {t:"Sign integration agreement — Amazon Publisher Services (retail ad targeting)", tag:"ads"},
+          {t:"Partner with AppLovin MAX (20+ real-time bidders, 25+ SDK networks)", tag:"ads"},
+          {t:"Partner with Unity LevelPlay / ironSource (gaming dominant)", tag:"ads"},
+          {t:"Partner with InMobi (global in-app: interstitials, native, video, playable)", tag:"ads"},
+          {t:"Partner with Smaato (strong programmatic RTB, high-quality inventory)", tag:"ads"},
+          {t:"Partner with Chartboost (gaming & app monetisation, Amazon store support)", tag:"ads"},
+          {t:"Partner with PropellerAds (195+ GEOs, 15B impressions/day)", tag:"ads"},
+          {t:"Partner with Trade Desk (programmatic DSP, enterprise scale)", tag:"ads"},
+          {t:"Partner with Criteo (retail media and performance ads)", tag:"ads"},
+          {t:"Partner with PubMatic / Magnite (independent supply-side platforms)", tag:"ads"},
+          {t:"Partner with Taboola / Outbrain (native content ad networks)", tag:"ads"},
+          {t:"Partner with Mobvista / Mintegral (Asia-Pacific focused ad platform)", tag:"ads"},
+          {t:"Partner with Baidu Marketing (China market ad platform)", tag:"ads"},
+          {t:"Partner with Kakao Moment (South Korea ad platform)", tag:"ads"},
+          {t:"Partner with Line Ads Platform (Japan and SE Asia)", tag:"ads"},
+          {t:"Partner with Vungle / Liftoff (mobile video ad mediation)", tag:"ads"},
+          {t:"Establish ad revenue reporting API feeding into Delper Group Dashboard", tag:"ads"},
+          {t:"Configure ad discount credit flow: 25% of $61.75 per transaction to consumer", tag:"ads"},
+        ]
+      },
+      {
+        num:"PH 18", title:"Survey & GPT Platform Partnerships", timeline:"M3–9",
+        tasks:[
+          {t:"Sign partnership — Swagbucks / Prodege (largest GPT platform globally)", tag:"survey"},
+          {t:"Sign partnership — Survey Junkie (millions of members, US/Canada/Australia)", tag:"survey"},
+          {t:"Sign partnership — Toluna (30M+ member global panel)", tag:"survey"},
+          {t:"Sign partnership — YouGov (20M+ members, professional opinion polling)", tag:"survey"},
+          {t:"Sign partnership — Ipsos i-Say (global market research giant)", tag:"survey"},
+          {t:"Sign partnership — InboxDollars / ySense (Prodege family, global coverage)", tag:"survey"},
+          {t:"Sign partnership — PrizeRebel (9M+ members, worldwide, crypto-friendly)", tag:"survey"},
+          {t:"Sign partnership — FreeCash (crypto wallet payouts — natural DPR alignment)", tag:"survey"},
+          {t:"Sign partnership — JumpTask (worldwide, crypto-native GPT tasks)", tag:"survey"},
+          {t:"Sign partnership — LifePoints / Lightspeed (5M+ members globally)", tag:"survey"},
+          {t:"Sign partnership — Valued Opinions (70+ countries)", tag:"survey"},
+          {t:"Sign partnership — Panel Station (India & SE Asia focus)", tag:"survey"},
+          {t:"Sign partnership — Rakuten Insight (Japan/Asia Pacific)", tag:"survey"},
+          {t:"Sign partnership — Prolific (academic and research-grade surveys)", tag:"survey"},
+          {t:"Sign partnership — Respondent.io (B2B professional surveys)", tag:"survey"},
+          {t:"Configure DPR token as payout option on all survey platforms", tag:"survey"},
+          {t:"Set up survey completion → Delper Opinion Poll integration bridge", tag:"survey"},
+        ]
+      },
+    ]
+  },
+  {
+    id:"sc", label:"SUPPLY CHAIN & POS INFRASTRUCTURE", color:"#f0b429",
+    phases:[
+      {
+        num:"PH 19", title:"Supply Chain Technology Partners", timeline:"M4–12",
+        tasks:[
+          {t:"Integrate SAP Ariba (6.5M suppliers) — API + Hyperledger connector", tag:"partner"},
+          {t:"Integrate Coupa Software (3,000+ enterprise buyers) — API connector", tag:"partner"},
+          {t:"Integrate GEP SMART (manufacturing focus) — API connector", tag:"partner"},
+          {t:"Integrate Candex (Fortune 2000 procurement) — API connector", tag:"partner"},
+          {t:"Partner with Contour / Marco Polo — trade finance (HSBC/StanChart network)", tag:"partner"},
+          {t:"Partner with project44 (200K+ logistics carriers) for delivery layer data", tag:"partner"},
+          {t:"Partner with Flexport (10K+ companies) for trade operations layer", tag:"partner"},
+          {t:"Partner with Stripe, Adyen, Worldpay as primary POS payment rails", tag:"partner"},
+          {t:"Partner with Mastercard Track + Stripe/Adyen enterprise integrations (M19–24)", tag:"partner"},
+          {t:"Onboard Anchor Partners 1–3 (live by M12)", tag:"partner"},
+          {t:"Onboard Anchor Partners 4–7 (live by M18)", tag:"partner"},
+          {t:"Onboard Anchor Partners 8–12 (live by M24)", tag:"partner"},
+          {t:"Build SC partner SLA monitoring, dispute resolution, and offboarding process", tag:"ops"},
+        ]
+      },
+    ]
+  },
+  {
+    id:"marketing", label:"MARKETING, COMMUNITY & INVESTOR RELATIONS", color:"#f472b6",
+    phases:[
+      {
+        num:"PH 20", title:"Brand, Marketing & Community", timeline:"M2–ongoing",
+        tasks:[
+          {t:"Build Delper brand identity: logo, visual system, tone of voice guidelines", tag:"mktg"},
+          {t:"Launch delperecom.com main website", tag:"mktg"},
+          {t:"Launch master explainer site (gkbharta44-code.github.io/Master/)", tag:"mktg"},
+          {t:"Build and activate Telegram community channel", tag:"mktg"},
+          {t:"Build and activate Twitter/X DPR account", tag:"mktg"},
+          {t:"Build and activate LinkedIn company page", tag:"mktg"},
+          {t:"Build and activate Discord community server", tag:"mktg"},
+          {t:"Produce DPR token economics whitepaper — public version", tag:"mktg"},
+          {t:"Produce institutional investor pitch deck (target 9.08 viability score)", tag:"mktg"},
+          {t:"Run seed investor roadshow: UAE, Singapore, India (M4–6)", tag:"mktg"},
+          {t:"Engage PR agency for DPR launch media coverage across 7 jurisdictions", tag:"mktg"},
+          {t:"Establish KOL (Key Opinion Leader) programme in UAE, India, Singapore", tag:"mktg"},
+          {t:"Plan and host Delper launch event — Dubai, Month 7", tag:"mktg"},
+          {t:"Build content calendar: blog, social, newsletter (monthly cadence)", tag:"mktg"},
+          {t:"Launch SEO strategy for delperecom.com (target 100K organic monthly visits Y1)", tag:"mktg"},
+          {t:"Set up paid media campaigns: Google, Meta, LinkedIn for merchant acquisition", tag:"mktg"},
+          {t:"Publish quarterly investor reports post-launch", tag:"mktg"},
+          {t:"Publish monthly ETH pool attestation reports publicly", tag:"mktg"},
+          {t:"Publish 32-year roadmap publicly (Year 1 complete)", tag:"mktg"},
+          {t:"Review and update 32-year roadmap annually with board", tag:"gov"},
+        ]
+      },
+    ]
+  },
+  {
+    id:"launch", label:"LAUNCH PHASES & GLOBAL EXPANSION", color:"#ff5c8a",
+    phases:[
+      {
+        num:"PH 21", title:"Soft Launch — UAE & Singapore (Wave 1)", timeline:"M7–12",
+        tasks:[
+          {t:"Confirm UAE VARA sandbox live and transacting", tag:"legal"},
+          {t:"Confirm MAS Singapore licence active", tag:"legal"},
+          {t:"Activate ETH Stability Pool — target $244.8B/month inflow", tag:"tech"},
+          {t:"Activate 6-layer recursive chain across first live SC partners", tag:"tech"},
+          {t:"Launch Delper Opinion Poll onboarding campaign — UAE + Singapore", tag:"onboard"},
+          {t:"Achieve 50,000 pilot transactions (break-even milestone, M8)", tag:"ops"},
+          {t:"Launch customer support infrastructure: helpdesk, chatbot, escalation tiers", tag:"ops"},
+          {t:"Conduct post-launch security audit", tag:"security"},
+          {t:"Publish first public ETH pool attestation report", tag:"finance"},
+          {t:"Achieve break-even at Month 8 — $61.2B monthly revenue run rate", tag:"finance"},
+          {t:"Review pilot data and iterate: onboarding flow, reward rates, UX", tag:"ops"},
+        ]
+      },
+      {
+        num:"PH 22", title:"Global Maturity & Scale (Waves 2–4)", timeline:"M13–24+",
+        tasks:[
+          {t:"File and receive MiCA approval — EU 27 countries", tag:"legal"},
+          {t:"Obtain NY BitLicense — USA", tag:"legal"},
+          {t:"Launch UK + Germany + India + Malaysia (Wave 2, M9–12)", tag:"ops"},
+          {t:"Launch France, Italy, Brazil, South Korea, Saudi Arabia (Wave 3, M13–18)", tag:"ops"},
+          {t:"Launch Nigeria, Indonesia and 30+ global markets (Wave 4, M19–24)", tag:"ops"},
+          {t:"Scale POS transactions toward 2B/month target", tag:"ops"},
+          {t:"Scale ecosystem participants toward 8.3B (Y5 target)", tag:"ops"},
+          {t:"Achieve institutional viability score 9.08/10", tag:"ops"},
+          {t:"Scale ETH pool toward $17.51T 5-year cumulative target", tag:"token"},
+          {t:"Track DPR token price trajectory toward $327.40 (Y5 base)", tag:"token"},
+          {t:"Expand Africa/LATAM: Flutterwave, DPO Group, Evertec, Kushki", tag:"partner"},
+          {t:"Expand MENA: Magnati, Network International, PayTabs, Geidea", tag:"partner"},
+          {t:"Reach 70% supply chain adoption milestone (Year 5 target)", tag:"ops"},
+          {t:"Implement DAO/governance framework for DPR token holders", tag:"gov"},
+          {t:"Conduct annual board review of 32-year roadmap milestones", tag:"gov"},
+        ]
+      },
+    ]
+  },
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const STORE_KEY = 'delper-comprehensive-v1';
+const saved = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY)||'{}'); } catch(e){ return {}; } })();
+let currentFilter = 'all';
+let currentSearch = '';
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function tagClass(tag) {
+  const map = {legal:'t-legal',tech:'t-tech',partner:'t-partner',ops:'t-ops',ads:'t-ads',survey:'t-survey',onboard:'t-onboard',token:'t-token',mktg:'t-mktg',finance:'t-finance',hr:'t-hr',security:'t-security',data:'t-data',exchange:'t-exchange',gov:'t-gov',qa:'t-qa'};
+  return map[tag]||'t-ops';
+}
+function tagLabel(tag) {
+  return tag.toUpperCase();
+}
+
+function buildUI() {
+  const root = document.getElementById('mainList');
+  root.innerHTML = '';
+  categories.forEach((cat, ci) => {
+    const sec = document.createElement('div');
+    sec.className = 'cat-section';
+    sec.dataset.cat = cat.id;
+
+    const hdr = document.createElement('div');
+    hdr.className = 'cat-header';
+    hdr.innerHTML = `<div class="cat-dot" style="background:${cat.color}"></div><div class="cat-title" style="color:${cat.color}">${cat.label}</div><div class="cat-count" id="cc-${ci}"></div><div class="cat-chevron">▼</div>`;
+    hdr.addEventListener('click', () => sec.classList.toggle('collapsed'));
+    sec.appendChild(hdr);
+
+    const grid = document.createElement('div');
+    grid.className = 'phase-grid';
+
+    cat.phases.forEach((phase, pi) => {
+      const card = document.createElement('div');
+      card.className = 'phase-card';
+
+      const cardHdr = document.createElement('div');
+      cardHdr.className = 'phase-card-header';
+      cardHdr.innerHTML = `<span class="ph-num">${phase.num}</span><span class="ph-title">${phase.title}</span><span class="ph-timeline">${phase.timeline}</span><span class="ph-chevron">▼</span>`;
+      cardHdr.addEventListener('click', () => card.classList.toggle('collapsed'));
+      card.appendChild(cardHdr);
+
+      const ul = document.createElement('ul');
+      ul.className = 'task-ul';
+
+      phase.tasks.forEach((task, ti) => {
+        const key = `c${ci}p${pi}t${ti}`;
+        const li = document.createElement('li');
+        li.className = 'task-li' + (saved[key] ? ' done' : '');
+        li.dataset.tag = task.tag;
+        li.dataset.text = task.t.toLowerCase();
+        li.dataset.key = key;
+
+        const cb = document.createElement('div');
+        cb.className = 'cb';
+        cb.textContent = saved[key] ? '✓' : '';
+
+        const txt = document.createElement('span');
+        txt.className = 'task-txt';
+        txt.textContent = task.t;
+
+        const tg = document.createElement('span');
+        tg.className = `tag ${tagClass(task.tag)}`;
+        tg.textContent = tagLabel(task.tag);
+
+        li.appendChild(cb); li.appendChild(txt); li.appendChild(tg);
+        li.addEventListener('click', () => {
+          const isDone = li.classList.toggle('done');
+          cb.textContent = isDone ? '✓' : '';
+          saved[key] = isDone;
+          try { localStorage.setItem(STORE_KEY, JSON.stringify(saved)); } catch(e){}
+          updateStats();
+        });
+        ul.appendChild(li);
+      });
+
+      card.appendChild(ul);
+      grid.appendChild(card);
+    });
+
+    sec.appendChild(grid);
+    root.appendChild(sec);
+  });
+
+  applyFilter();
+}
+
+function applyFilter() {
+  const allLi = document.querySelectorAll('.task-li');
+  allLi.forEach(li => {
+    const tagMatch = currentFilter === 'all' || li.dataset.tag === currentFilter;
+    const searchMatch = !currentSearch || li.dataset.text.includes(currentSearch);
+    li.classList.toggle('hidden', !(tagMatch && searchMatch));
+  });
+
+  // hide empty cards
+  document.querySelectorAll('.phase-card').forEach(card => {
+    const visible = card.querySelectorAll('.task-li:not(.hidden)').length;
+    card.style.display = visible ? '' : 'none';
+  });
+
+  // hide empty category sections
+  document.querySelectorAll('.cat-section').forEach(sec => {
+    const visible = sec.querySelectorAll('.phase-card:not([style*="none"])').length;
+    sec.style.display = visible ? '' : 'none';
+  });
+
+  const anyVisible = document.querySelectorAll('.task-li:not(.hidden)').length > 0;
+  document.getElementById('emptyState').classList.toggle('show', !anyVisible);
+
+  updateStats();
+  updateCatCounts();
+}
+
+function updateCatCounts() {
+  categories.forEach((cat, ci) => {
+    const el = document.getElementById(`cc-${ci}`);
+    if (!el) return;
+    const sec = document.querySelector(`.cat-section[data-cat="${cat.id}"]`);
+    if (!sec) return;
+    const total = sec.querySelectorAll('.task-li').length;
+    const done  = sec.querySelectorAll('.task-li.done').length;
+    el.textContent = `${done}/${total}`;
+  });
+}
+
+function updateStats() {
+  const all  = document.querySelectorAll('.task-li');
+  const done = document.querySelectorAll('.task-li.done');
+  const total = all.length, doneCount = done.length;
+  const pct = total ? Math.round((doneCount/total)*100) : 0;
+  document.getElementById('sTotal').textContent = total;
+  document.getElementById('sDone').textContent  = doneCount;
+  document.getElementById('sLeft').textContent  = total - doneCount;
+  document.getElementById('sPct').textContent   = pct + '%';
+  document.getElementById('pbFill').style.width = pct + '%';
+  document.getElementById('pbLabel').textContent = `${doneCount} of ${total} tasks complete · ${pct}%`;
+}
+
+// ─── FILTER BUTTONS ──────────────────────────────────────────────────────────
+document.querySelectorAll('.fbtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    applyFilter();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  currentSearch = e.target.value.trim().toLowerCase();
+  applyFilter();
+});
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+buildUI();
+</script>
+</body>
+</html>
